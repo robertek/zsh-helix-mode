@@ -520,19 +520,17 @@ function __zhm_show_message {
 }
 
 function __zhm_find_line_end  {
-  setopt localoptions rematchpcre
   local pos=$1
   local buffer="$2"
-  if [[ "${buffer:$pos}" =~ '\A[^\n]*\n|\A[^\n]*' ]]; then
+  if [[ "${buffer:$pos}" =~ '^[^\n]*\n|^[^\n]*' ]]; then
     printf '%s\n' $((pos + MEND - 1))
   fi
 }
 
 function __zhm_find_line_start {
-  setopt localoptions rematchpcre
   local pos=$1
   local buffer="$2"
-  if [[ "${buffer:0:$((pos + 1))}" =~ '[^\n]*\n\z|[^\n]*\z' ]]; then
+  if [[ "${buffer:0:$((pos + 1))}" =~ '[^\n]*\n$|[^\n]*$' ]]; then
     printf '%s\n' $((MBEGIN - 1))
   fi
 }
@@ -763,7 +761,6 @@ function zhm_clear_selection_move_right {
 }
 
 function zhm_move_down {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local line_end=$(__zhm_find_line_end $cursor "$BUFFER")
@@ -844,15 +841,14 @@ function zhm_move_up_or_history_prev {
 }
 
 function zhm_move_next_word_start {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local rbuffer="${BUFFER:$cursor}"
-    if [[ $rbuffer =~ '^\n*(\w+[^\S\n]*|[^\w\s]+[^\S\n]*|[^\S\n]+)' ]]; then
+    if [[ $rbuffer =~ '^\n*([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
       local skip=$((mbegin[1] - 1))
       local go=$((cursor + mend[1] - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${rbuffer:1} =~ '^\n*(\w+[^\S\n]*|[^\w\s]+[^\S\n]*|[^\S\n]+)' ]]; then
+        && [[ ${rbuffer:1} =~ '^\n*([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
         skip=$((mbegin[1]))
         go=$((cursor + mend[1]))
       fi
@@ -864,15 +860,14 @@ function zhm_move_next_word_start {
 }
 
 function zhm_move_prev_word_start {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local lbuffer="${BUFFER:0:$((cursor + 1))}"
-    if [[ $lbuffer =~ '(\w+[^\S\n]*|[^\w\s]+[^\S\n]*|[^\S\n]+)\n*$' ]]; then
+    if [[ $lbuffer =~ '([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)\n*$' ]]; then
       local skip=$((${#lbuffer} - mend[1]))
       local go=$((mbegin - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${lbuffer:0:-1} =~ '(\w+[^\S\n]*|[^\w\s]+[^\S\n]*|[^\S\n]+)\n*$' ]]; then
+        && [[ ${lbuffer:0:-1} =~ '([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)\n*$' ]]; then
         skip=$((${#lbuffer} - mend[1]))
         go=$((mbegin - 1))
       fi
@@ -884,15 +879,14 @@ function zhm_move_prev_word_start {
 }
 
 function zhm_move_next_word_end {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local rbuffer="${BUFFER:$cursor}"
-    if [[ $rbuffer =~ '^\n*([^\S\n]*\w+|[^\S\n]*[^\w\s]+|[^\S\n]+)' ]]; then
+    if [[ $rbuffer =~ '^\n*([[:blank:]]*[[:alnum:]_]+|[[:blank:]]*[^[:alnum:]_[:space:]]+|[[:blank:]]+)' ]]; then
       local skip=$((mbegin[1] - 1))
       local go=$((cursor + mend[1] - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${rbuffer:1} =~ '^\n*([^\S\n]*\w+|[^\S\n]*[^\w\s]+|[^\S\n]+)' ]]; then
+        && [[ ${rbuffer:1} =~ '^\n*([[:blank:]]*[[:alnum:]_]+|[[:blank:]]*[^[:alnum:]_[:space:]]+|[[:blank:]]+)' ]]; then
         skip=$((mbegin[1]))
         go=$((cursor + mend[1]))
       fi
@@ -904,15 +898,14 @@ function zhm_move_next_word_end {
 }
 
 function zhm_move_next_long_word_start {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local rbuffer="${BUFFER:$cursor}"
-    if [[ $rbuffer =~ '^\n*(\S+[^\S\n]*|[^\S\n]+)' ]]; then
+    if [[ $rbuffer =~ '^\n*([^[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
       local skip=$((mbegin[1] - 1))
       local go=$((cursor + mend[1] - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${rbuffer:1} =~ '^\n*(\S+[^\S\n]*|[^\S\n]+)' ]]; then
+        && [[ ${rbuffer:1} =~ '^\n*([^[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
         skip=$((mbegin[1]))
         go=$((cursor + mend[1]))
       fi
@@ -924,15 +917,14 @@ function zhm_move_next_long_word_start {
 }
 
 function zhm_move_prev_long_word_start {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local lbuffer="${BUFFER:0:$((cursor + 1))}"
-    if [[ $lbuffer =~ '(\S+[^\S\n]*|[^\S\n]+)\n*$' ]]; then
+    if [[ $lbuffer =~ '([^[:space:]]+[[:blank:]]*|[[:blank:]]+)\n*$' ]]; then
       local skip=$((${#lbuffer} - mend[1]))
       local go=$((mbegin - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${lbuffer:0:-1} =~ '(\S+[^\S\n]*|[^\S\n]+)\n*$' ]]; then
+        && [[ ${lbuffer:0:-1} =~ '([^[:space:]]+[[:blank:]]*|[[:blank:]]+)\n*$' ]]; then
         skip=$((${#lbuffer} - mend[1]))
         go=$((mbegin - 1))
       fi
@@ -944,15 +936,14 @@ function zhm_move_prev_long_word_start {
 }
 
 function zhm_move_next_long_word_end {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local rbuffer="${BUFFER:$cursor}"
-    if [[ $rbuffer =~ '^\n*([^\S\n]*\S+|[^\S\n]+)' ]]; then
+    if [[ $rbuffer =~ '^\n*([[:blank:]]*[^[:space:]]+|[[:blank:]]+)' ]]; then
       local skip=$((mbegin[1] - 1))
       local go=$((cursor + mend[1] - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${rbuffer:1} =~ '^\n*([^\S\n]*\S+|[^\S\n]+)' ]]; then
+        && [[ ${rbuffer:1} =~ '^\n*([[:blank:]]*[^[:space:]]+|[[:blank:]]+)' ]]; then
         skip=$((mbegin[1]))
         go=$((cursor + mend[1]))
       fi
@@ -1470,8 +1461,6 @@ function zhm_shell_pipe {
 # Selection manipulation =======================================================
 
 function __zhm_select_regex_hook {
-  setopt localoptions rematchpcre
-
   local regex="$BUFFER"
   if [[ -z "$regex" ]]; then
     ZHM_PRIMARY_CURSOR_IDX=$ZHM_PREV_PRIMARY_CURSOR_IDX
@@ -1555,7 +1544,6 @@ function zhm_select_regex {
 }
 
 function zhm_trim_selections {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local left=$zhm_cursors_selection_left[$i]
@@ -1563,9 +1551,13 @@ function zhm_trim_selections {
     if (( left == right )); then
       continue
     fi
-    if [[ "${BUFFER[$((left + 1)),$((right + 1))]}" =~ '\A\s*([\S\s]+?)\s*\z' ]]; then
-      zhm_cursors_selection_left[$i]=$((left + mbegin[1] - 1))
-      zhm_cursors_selection_right[$i]=$((left + mend[1] - 1))
+    local sel_content="${BUFFER[$((left + 1)),$((right + 1))]}"
+    local trimmed="$(printf '%s' "$sel_content" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+    if [[ -n "$trimmed" ]]; then
+      local leading_count=$(printf '%s' "$sel_content" | sed -n 's/^\([[:space:]]*\).*$/\1/p' | wc -c)
+      leading_count=$((leading_count - 1))
+      zhm_cursors_selection_left[$i]=$((left + leading_count))
+      zhm_cursors_selection_right[$i]=$((left + leading_count + ${#trimmed} - 1))
     else
       zhm_cursors_selection_left[$i]=$cursor
       zhm_cursors_selection_right[$i]=$cursor
@@ -1853,11 +1845,10 @@ function zhm_goto_line_end {
 }
 
 function zhm_goto_line_first_nonwhitespace {
-  setopt localoptions rematchpcre
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local line_start=$(__zhm_find_line_start $cursor "$BUFFER")
-    if [[ "${BUFFER:$line_start}" =~ '\A[^\S\n]*' ]]; then
+    if [[ "${BUFFER:$line_start}" =~ '^[[:blank:]]*' ]]; then
       __zhm_goto $i $((line_start + MEND))
     fi
   done
