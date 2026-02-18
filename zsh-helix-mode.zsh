@@ -522,7 +522,7 @@ function __zhm_show_message {
 function __zhm_find_line_end  {
   local pos=$1
   local buffer="$2"
-  if [[ "${buffer:$pos}" =~ '^[^\n]*\n|^[^\n]*' ]]; then
+  if [[ "${buffer:$pos}" =~ '^[^\n]*[\n]|^[^\n]*' ]]; then
     printf '%s\n' $((pos + MEND - 1))
   fi
 }
@@ -530,7 +530,7 @@ function __zhm_find_line_end  {
 function __zhm_find_line_start {
   local pos=$1
   local buffer="$2"
-  if [[ "${buffer:0:$((pos + 1))}" =~ '[^\n]*\n$|[^\n]*$' ]]; then
+  if [[ "${buffer:0:$((pos + 1))}" =~ '[^\n]*[\n]$|[^\n]*$' ]]; then
     printf '%s\n' $((MBEGIN - 1))
   fi
 }
@@ -844,11 +844,11 @@ function zhm_move_next_word_start {
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local rbuffer="${BUFFER:$cursor}"
-    if [[ $rbuffer =~ '^\n*([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
+    if [[ $rbuffer =~ '^[\n]*([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
       local skip=$((mbegin[1] - 1))
       local go=$((cursor + mend[1] - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${rbuffer:1} =~ '^\n*([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
+        && [[ ${rbuffer:1} =~ '^[\n]*([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
         skip=$((mbegin[1]))
         go=$((cursor + mend[1]))
       fi
@@ -863,11 +863,11 @@ function zhm_move_prev_word_start {
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local lbuffer="${BUFFER:0:$((cursor + 1))}"
-    if [[ $lbuffer =~ '([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)\n*$' ]]; then
+    if [[ $lbuffer =~ '([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)[\n]*$' ]]; then
       local skip=$((${#lbuffer} - mend[1]))
       local go=$((mbegin - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${lbuffer:0:-1} =~ '([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)\n*$' ]]; then
+        && [[ ${lbuffer:0:-1} =~ '([[:alnum:]_]+[[:blank:]]*|[^[:alnum:]_[:space:]]+[[:blank:]]*|[[:blank:]]+)[\n]*$' ]]; then
         skip=$((${#lbuffer} - mend[1]))
         go=$((mbegin - 1))
       fi
@@ -882,11 +882,11 @@ function zhm_move_next_word_end {
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local rbuffer="${BUFFER:$cursor}"
-    if [[ $rbuffer =~ '^\n*([[:blank:]]*[[:alnum:]_]+|[[:blank:]]*[^[:alnum:]_[:space:]]+|[[:blank:]]+)' ]]; then
+    if [[ $rbuffer =~ '^[\n]*([[:blank:]]*[[:alnum:]_]+|[[:blank:]]*[^[:alnum:]_[:space:]]+|[[:blank:]]+)' ]]; then
       local skip=$((mbegin[1] - 1))
       local go=$((cursor + mend[1] - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${rbuffer:1} =~ '^\n*([[:blank:]]*[[:alnum:]_]+|[[:blank:]]*[^[:alnum:]_[:space:]]+|[[:blank:]]+)' ]]; then
+        && [[ ${rbuffer:1} =~ '^[\n]*([[:blank:]]*[[:alnum:]_]+|[[:blank:]]*[^[:alnum:]_[:space:]]+|[[:blank:]]+)' ]]; then
         skip=$((mbegin[1]))
         go=$((cursor + mend[1]))
       fi
@@ -901,11 +901,11 @@ function zhm_move_next_long_word_start {
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local rbuffer="${BUFFER:$cursor}"
-    if [[ $rbuffer =~ '^\n*([^[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
+    if [[ $rbuffer =~ '^[\n]*([^[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
       local skip=$((mbegin[1] - 1))
       local go=$((cursor + mend[1] - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${rbuffer:1} =~ '^\n*([^[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
+        && [[ ${rbuffer:1} =~ '^[\n]*([^[:space:]]+[[:blank:]]*|[[:blank:]]+)' ]]; then
         skip=$((mbegin[1]))
         go=$((cursor + mend[1]))
       fi
@@ -920,11 +920,11 @@ function zhm_move_prev_long_word_start {
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local lbuffer="${BUFFER:0:$((cursor + 1))}"
-    if [[ $lbuffer =~ '([^[:space:]]+[[:blank:]]*|[[:blank:]]+)\n*$' ]]; then
+    if [[ $lbuffer =~ '([^[:space:]]+[[:blank:]]*|[[:blank:]]+)[\n]*$' ]]; then
       local skip=$((${#lbuffer} - mend[1]))
       local go=$((mbegin - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${lbuffer:0:-1} =~ '([^[:space:]]+[[:blank:]]*|[[:blank:]]+)\n*$' ]]; then
+        && [[ ${lbuffer:0:-1} =~ '([^[:space:]]+[[:blank:]]*|[[:blank:]]+)[\n]*$' ]]; then
         skip=$((${#lbuffer} - mend[1]))
         go=$((mbegin - 1))
       fi
@@ -939,11 +939,11 @@ function zhm_move_next_long_word_end {
   for i in {1..$#zhm_cursors_pos}; do
     local cursor=$zhm_cursors_pos[$i]
     local rbuffer="${BUFFER:$cursor}"
-    if [[ $rbuffer =~ '^\n*([[:blank:]]*[^[:space:]]+|[[:blank:]]+)' ]]; then
+    if [[ $rbuffer =~ '^[\n]*([[:blank:]]*[^[:space:]]+|[[:blank:]]+)' ]]; then
       local skip=$((mbegin[1] - 1))
       local go=$((cursor + mend[1] - 1))
       if (( ${#match[1]} == 1 )) \
-        && [[ ${rbuffer:1} =~ '^\n*([[:blank:]]*[^[:space:]]+|[[:blank:]]+)' ]]; then
+        && [[ ${rbuffer:1} =~ '^[\n]*([[:blank:]]*[^[:space:]]+|[[:blank:]]+)' ]]; then
         skip=$((mbegin[1]))
         go=$((cursor + mend[1]))
       fi
